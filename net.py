@@ -15,9 +15,21 @@ def init_parameters(structure):
 def sigmoid(Z):
 	return 1/(1 + np.exp(-1 * Z)),Z
 
+
 def relu(Z):
 	return np.maximum(0,Z),Z
 
+def relu_backward(dA, cache):
+    Z = cache
+    dZ = np.array(dA, copy=True) 
+    dZ[Z <= 0] = 0
+    return dZ
+
+def sigmoid_backward(dA, cache):
+    Z = cache
+    s = 1/(1+np.exp(-Z))
+    dZ = dA * s * (1-s)
+    return dZ
 
 def forward_propagation(A,W,b):
 	Z = np.dot(W,A) + b
@@ -44,24 +56,20 @@ def L_model_forward(X, parameters):
         A, cache = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)],activation = "relu")
         caches.append(cache)
     A_prev = A
-    #print (parameters["W"+str(int(len(parameters)/2))].shape)
-    #print (parameters["b"+str(int(len(parameters)/2))].shape)
-    #print (str(int(len(parameters)/2)))
     AL, cache = linear_activation_forward(A_prev, parameters["W"+str(int(len(parameters)/2))], parameters["b"+str(int(len(parameters)/2))],activation = "sigmoid")
     caches.append(cache)       
     return AL, caches
 
 def compute_cost(AL, Y):
-	print (AL.shape)
-	m = Y.shape[0]#zmiana z 1 na 0
-	cost = -1/m*np.sum(Y*np.log(AL)+(1-Y)*np.log(1-AL))
-	cost = np.squeeze(cost)   
-	return cos
+    m = Y.shape[1]
+    cost = -1/m*np.sum(Y*np.log(AL)+(1-Y)*np.log(1-AL))
+    cost = np.squeeze(cost)   
+    return cost
 
 def linear_backward(dZ, cache):
     A_prev, W, b = cache
     m = A_prev.shape[1]
-    dW = 1/m*np.dot(dZ,np.transpose(A_prev))
+    dW = -1.0/m*np.dot(dZ,np.transpose(A_prev))
     db = 1/m*np.sum(dZ,axis=1,keepdims = True)
     dA_prev = np.dot(W.T,dZ)    
     return dA_prev, dW, db
@@ -93,7 +101,7 @@ def L_model_backward(AL, Y, caches):
     return grads
 
 def update_parameters(parameters, grads, learning_rate):
-    L = len(parameters) // 2
+    L = len(parameters) / 2
     for l in range(L):
         parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate* grads["dW" + str(l+1)]
         parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate* grads["db" + str(l+1)]
@@ -163,28 +171,34 @@ def get_test_data(size):
 #main
 #main
 hidenLayers = [7]
-learning_rate = 0.01
-number_of_iterations = 1
+learning_rate = 0.1
+number_of_iterations = 10
 size = 5 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
-structure = [size*2] + hidenLayers + [size]
-print ("structure = ", structure)
+structure = [size*2] + hidenLayers + [1]
+#print ("structure = ", structure)
 par = init_parameters(structure)
 pars = {}
 pars["0"] = par
-print ("W1 = ", par["W1"].shape)
-print ("b1 = ", par["b1"].shape)
-print ("W2 = ", par["W2"].shape)
-print ("b2 = ", par["b2"].shape)
+costs = {}
+#print ("W1 = ", par["W1"].shape)
+#print ("b1 = ", par["b1"].shape)
+#print ("W2 = ", par["W2"].shape)
+#print ("b2 = ", par["b2"].shape)
 trainDataX,trainDataY = get_train_data(size)
 testDataX,testDataY = get_test_data(size)
-print trainDataX.shape
-print trainDataY.shape
-for i in range(number_of_iterations)
-#	AL, caches = L_model_forward(trainDataX[i],par)
-#	cost = compute_cost(AL, testDataY[i])
-#	grads = L_model_backward(AL, testDataY[i],caches)
-#	par = update_parameters(par, grads, learning_rate)
-#   pars[str(i+1)] = par
+#print trainDataX.shape
+trainDataY = trainDataY[0,:]
+#print trainDataY
+trainDataY = trainDataY.reshape((1,len(trainDataY)))
+#print trainDataY.shape
+for i in range(number_of_iterations):
+    AL, caches = L_model_forward(trainDataX,par)
+    cost = compute_cost(AL, trainDataY)
+    costs[str(i+1)] = cost
+    grads = L_model_backward(AL, trainDataY,caches)
+    par = update_parameters(par, grads, learning_rate)
+    pars[str(i+1)] = par
 
 # test
+print costs
