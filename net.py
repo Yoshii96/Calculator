@@ -1,6 +1,8 @@
 import numpy as np
 import re
 import sys
+np.set_printoptions(threshold='nan')
+
 
 def init_parameters(structure):
 	wArraySize = len(structure)
@@ -98,78 +100,91 @@ def update_parameters(parameters, grads, learning_rate):
     return parameters
 
 
+def get_train_data(size):
+    with open("trainData.txt", "r") as fileTrainData:
+        trainData = fileTrainData.read()
+        trainData = trainData[1:-1]
+        trainData = trainData.split("\n")
+        trainDataX = np.zeros(((size*2),len(trainData)))
+        trainDataY = np.zeros((size,len(trainData)))
+        for i in range(len(trainData)):
+        	trainData[i] = trainData[i].replace("[", "").replace("]","").replace("'","").strip()
+        	trainData[i] = re.sub(' +', ' ',trainData[i])
+        	trainData[i] = trainData[i].split(" ")
+        	for j in range(len(trainData[i])):
+        		trainData[i][j] = np.binary_repr(int(trainData[i][j]),size)
+        	tmpstring = str(trainData[i][0]) + str(trainData[i][1])
+        	for j in range(size*2):
+        		if tmpstring[j] == '1':
+        			trainDataX[j][i] = 1
+        		else:
+        			trainDataX[j][i] = 0
+
+        	tmpstring = str(trainData[i][2])
+        	for j in range(size):
+        		if tmpstring[j] == '1':
+        			trainDataY[j][i] = 1
+        		else:
+        			trainDataY[j][i] = 0    			
+    return trainDataX,trainDataY
+
+def get_test_data(size):
+    with open("testData.txt", "r") as fileTestData:
+        testData = fileTestData.read()
+        testData = testData[1:-1]
+        testData = testData.split("\n")
+        testDataX = np.zeros((len(testData),size*2))
+        testDataY = np.zeros((len(testData),size))
+        for i in range(len(testData)):
+        	testData[i] = testData[i].replace("[", "").replace("]","").replace("'","").strip()
+        	testData[i] = re.sub(' +', ' ',testData[i])
+        	testData[i] = testData[i].split(" ")
+        	for j in range(len(testData[i])):
+        		testData[i][j] = np.binary_repr(int(testData[i][j]),size)
+        	tmpstring = str(testData[i][0]) + str(testData[i][1])
+        	for j in range(size*2):
+        		if tmpstring[j] == '1':
+        			testDataX[i][j] = 1
+        		else:
+        			testDataX[i][j] = 0
+
+        	tmpstring = str(testData[i][2])
+        	for j in range(size):
+        		if tmpstring[j] == '1':
+        			testDataY[i][j] = 1
+        		else:
+        			testDataY[i][j] = 0
+    return testDataX,testDataY
+
+
+
+
+
 #main
-hidenLayers = [10]
+#main
+hidenLayers = [7]
 learning_rate = 0.01
+number_of_iterations = 1
 size = 5 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
-
-
-with open("trainData.txt", "r") as fileTrainData:
-    trainData = fileTrainData.read()
-    trainData = trainData[1:-1]
-    trainData = trainData.split("\n")
-    trainDataX = np.zeros((len(trainData),size*2))
-    trainDataY = np.zeros((len(trainData),size))
-    for i in range(len(trainData)):
-    	trainData[i] = trainData[i].replace("[", "").replace("]","").replace("'","").strip()
-    	trainData[i] = re.sub(' +', ' ',trainData[i])
-    	trainData[i] = trainData[i].split(" ")
-    	for j in range(len(trainData[i])):
-    		trainData[i][j] = np.binary_repr(int(trainData[i][j]),size)
-    	tmpstring = str(trainData[i][0]) + str(trainData[i][1])
-    	for j in range(size*2):
-    		if tmpstring[j] == '1':
-    			trainDataX[i][j] = 1
-    		else:
-    			trainDataX[i][j] = 0
-
-    	tmpstring = str(trainData[i][2])
-    	for j in range(size):
-    		if tmpstring[j] == '1':
-    			trainDataY[i][j] = 1
-    		else:
-    			trainDataY[i][j] = 0    			
-
-print trainDataX[0].shape
-trainDataX[0] = trainDataX[0].reshape((10,1))
-
-
-
-with open("testData.txt", "r") as fileTestData:
-    testData = fileTestData.read()
-    testData = testData[1:-1]
-    testData = testData.split("\n")
-    testDataX = np.zeros((len(testData),size*2))
-    testDataY = np.zeros((len(testData),size))
-    for i in range(len(testData)):
-    	testData[i] = testData[i].replace("[", "").replace("]","").replace("'","").strip()
-    	testData[i] = re.sub(' +', ' ',testData[i])
-    	testData[i] = testData[i].split(" ")
-    	for j in range(len(testData[i])):
-    		testData[i][j] = np.binary_repr(int(testData[i][j]),size)
-    	tmpstring = str(testData[i][0]) + str(testData[i][1])
-    	for j in range(size*2):
-    		if tmpstring[j] == '1':
-    			testDataX[i][j] = 1
-    		else:
-    			testDataX[i][j] = 0
-
-    	tmpstring = str(testData[i][2])
-    	for j in range(size):
-    		if tmpstring[j] == '1':
-    			testDataY[i][j] = 1
-    		else:
-    			testDataY[i][j] = 0
-
 structure = [size*2] + hidenLayers + [size]
+print ("structure = ", structure)
 par = init_parameters(structure)
-prev_par = par
-for i in range(len(trainDataX)):
-	AL, caches = L_model_forward(trainDataX[i],par)
-	cost = compute_cost(AL, testDataY[i])
-	grads = L_model_backward(AL, testDataY[i],caches)
-	par = update_parameters(par, grads, learning_rate)
-
+pars = {}
+pars["0"] = par
+print ("W1 = ", par["W1"].shape)
+print ("b1 = ", par["b1"].shape)
+print ("W2 = ", par["W2"].shape)
+print ("b2 = ", par["b2"].shape)
+trainDataX,trainDataY = get_train_data(size)
+testDataX,testDataY = get_test_data(size)
+print trainDataX.shape
+print trainDataY.shape
+for i in range(number_of_iterations)
+#	AL, caches = L_model_forward(trainDataX[i],par)
+#	cost = compute_cost(AL, testDataY[i])
+#	grads = L_model_backward(AL, testDataY[i],caches)
+#	par = update_parameters(par, grads, learning_rate)
+#   pars[str(i+1)] = par
 
 # test
