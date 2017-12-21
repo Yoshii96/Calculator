@@ -1,6 +1,7 @@
 import numpy as np
 import re
 import sys
+import matplotlib.pyplot as plt
 np.set_printoptions(threshold='nan')
 
 
@@ -44,6 +45,7 @@ def linear_activation_forward(A_prev, W, b, activation):
         Z, linear_cache = forward_propagation(A_prev,W,b)
         A, activation_cache = relu(Z)
     cache = (linear_cache, activation_cache)
+    #print A.shape
     return A, cache
 
 def L_model_forward(X, parameters):
@@ -62,6 +64,13 @@ def L_model_forward(X, parameters):
 
 def compute_cost(AL, Y):
     m = Y.shape[1]
+    tmp1 = np.log(AL)
+    tmp2 = np.log(1-AL)
+    tmp1 = Y * tmp1
+    tmp2 = (1-Y) * tmp2
+    tmp1 = tmp1 + tmp2
+    tmp3 = np.sum(tmp1)
+    tmp3 = -1/m * tmp3
     cost = -1/m*np.sum(Y*np.log(AL)+(1-Y)*np.log(1-AL))
     cost = np.squeeze(cost)   
     return cost
@@ -103,8 +112,8 @@ def L_model_backward(AL, Y, caches):
 def update_parameters(parameters, grads, learning_rate):
     L = len(parameters) / 2
     for l in range(L):
-        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate* grads["dW" + str(l+1)]
-        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate* grads["db" + str(l+1)]
+        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] + learning_rate* grads["dW" + str(l+1)]
+        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] + learning_rate* grads["db" + str(l+1)]
     return parameters
 
 
@@ -113,26 +122,25 @@ def get_train_data(size):
         trainData = fileTrainData.read()
         trainData = trainData[1:-1]
         trainData = trainData.split("\n")
-        trainDataX = np.zeros(((size*2),len(trainData)))
-        trainDataY = np.zeros((size,len(trainData)))
+        trainDataX = np.zeros((((size+1)*2),len(trainData)))
+        trainDataY = np.zeros((size+1,len(trainData)))
         for i in range(len(trainData)):
-        	trainData[i] = trainData[i].replace("[", "").replace("]","").replace("'","").strip()
-        	trainData[i] = re.sub(' +', ' ',trainData[i])
-        	trainData[i] = trainData[i].split(" ")
-        	for j in range(len(trainData[i])):
-        		trainData[i][j] = np.binary_repr(int(trainData[i][j]),size)
-        	tmpstring = str(trainData[i][0]) + str(trainData[i][1])
-        	for j in range(size*2):
+            trainData[i] = trainData[i].replace("[", "").replace("]","").replace("'","").strip()
+            trainData[i] = re.sub(' +', ' ',trainData[i])
+            trainData[i] = trainData[i].split(" ")
+            for j in range(len(trainData[i])):
+                trainData[i][j] = np.binary_repr(int(trainData[i][j]),size+1)
+            tmpstring = str(trainData[i][0]) + str(trainData[i][1])
+            for j in range((size+1)*2):
         		if tmpstring[j] == '1':
         			trainDataX[j][i] = 1
         		else:
         			trainDataX[j][i] = 0
-
-        	tmpstring = str(trainData[i][2])
-        	for j in range(size):
-        		if tmpstring[j] == '1':
+            tmpstring = str(trainData[i][2])
+            for j in range(size+1):
+                if tmpstring[j] == '1':
         			trainDataY[j][i] = 1
-        		else:
+                else:
         			trainDataY[j][i] = 0    			
     return trainDataX,trainDataY
 
@@ -141,29 +149,27 @@ def get_test_data(size):
         testData = fileTestData.read()
         testData = testData[1:-1]
         testData = testData.split("\n")
-        testDataX = np.zeros((len(testData),size*2))
-        testDataY = np.zeros((len(testData),size))
+        testDataX = np.zeros((((size+1)*2),len(testData)))
+        testDataY = np.zeros((size+1,len(testData)))
         for i in range(len(testData)):
-        	testData[i] = testData[i].replace("[", "").replace("]","").replace("'","").strip()
-        	testData[i] = re.sub(' +', ' ',testData[i])
-        	testData[i] = testData[i].split(" ")
-        	for j in range(len(testData[i])):
-        		testData[i][j] = np.binary_repr(int(testData[i][j]),size)
-        	tmpstring = str(testData[i][0]) + str(testData[i][1])
-        	for j in range(size*2):
-        		if tmpstring[j] == '1':
-        			testDataX[i][j] = 1
-        		else:
-        			testDataX[i][j] = 0
-
-        	tmpstring = str(testData[i][2])
-        	for j in range(size):
-        		if tmpstring[j] == '1':
-        			testDataY[i][j] = 1
-        		else:
-        			testDataY[i][j] = 0
+            testData[i] = testData[i].replace("[", "").replace("]","").replace("'","").strip()
+            testData[i] = re.sub(' +', ' ',testData[i])
+            testData[i] = testData[i].split(" ")
+            for j in range(len(testData[i])):
+                testData[i][j] = np.binary_repr(int(testData[i][j]),size+1)
+            tmpstring = str(testData[i][0]) + str(testData[i][1])
+            for j in range((size+1)*2):
+                if tmpstring[j] == '1':
+                    testDataX[j][i] = 1
+                else:
+                    testDataX[j][i] = 0
+            tmpstring = str(testData[i][2])
+            for j in range(size+1):
+                if tmpstring[j] == '1':
+                    testDataY[j][i] = 1
+                else:
+                    testDataY[j][i] = 0                
     return testDataX,testDataY
-
 
 
 
@@ -171,16 +177,16 @@ def get_test_data(size):
 #main
 #main
 hidenLayers = [7]
-learning_rate = 0.1
-number_of_iterations = 10
-size = 5 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
+learning_rate = 0.2
+number_of_iterations = 100
+size = 8 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
-structure = [size*2] + hidenLayers + [1]
+structure = [(size+1)*2] + hidenLayers + [size+1]
 #print ("structure = ", structure)
 par = init_parameters(structure)
 pars = {}
 pars["0"] = par
-costs = {}
+costs = np.zeros(number_of_iterations)
 #print ("W1 = ", par["W1"].shape)
 #print ("b1 = ", par["b1"].shape)
 #print ("W2 = ", par["W2"].shape)
@@ -188,17 +194,18 @@ costs = {}
 trainDataX,trainDataY = get_train_data(size)
 testDataX,testDataY = get_test_data(size)
 #print trainDataX.shape
-trainDataY = trainDataY[0,:]
-#print trainDataY
-trainDataY = trainDataY.reshape((1,len(trainDataY)))
-#print trainDataY.shape
+#trainDataY = trainDataY[0:2,:]
 for i in range(number_of_iterations):
     AL, caches = L_model_forward(trainDataX,par)
     cost = compute_cost(AL, trainDataY)
-    costs[str(i+1)] = cost
     grads = L_model_backward(AL, trainDataY,caches)
     par = update_parameters(par, grads, learning_rate)
     pars[str(i+1)] = par
-
+    costs[i] = cost
 # test
 print costs
+
+iteration = np.arange(0, number_of_iterations,1)
+plt.plot(iteration,costs)
+plt.savefig("test.png")
+plt.show
