@@ -2,6 +2,7 @@ import numpy as np
 import re
 import sys
 import matplotlib.pyplot as plt
+import pickle
 np.set_printoptions(threshold='nan')
 
 
@@ -144,41 +145,17 @@ def get_train_data(size):
         			trainDataY[j][i] = 0    			
     return trainDataX,trainDataY
 
-def get_test_data(size):
-    with open("testData.txt", "r") as fileTestData:
-        testData = fileTestData.read()
-        testData = testData[1:-1]
-        testData = testData.split("\n")
-        testDataX = np.zeros((((size+1)*2),len(testData)))
-        testDataY = np.zeros((size+1,len(testData)))
-        for i in range(len(testData)):
-            testData[i] = testData[i].replace("[", "").replace("]","").replace("'","").strip()
-            testData[i] = re.sub(' +', ' ',testData[i])
-            testData[i] = testData[i].split(" ")
-            for j in range(len(testData[i])):
-                testData[i][j] = np.binary_repr(int(testData[i][j]),size+1)
-            tmpstring = str(testData[i][0]) + str(testData[i][1])
-            for j in range((size+1)*2):
-                if tmpstring[j] == '1':
-                    testDataX[j][i] = 1
-                else:
-                    testDataX[j][i] = 0
-            tmpstring = str(testData[i][2])
-            for j in range(size+1):
-                if tmpstring[j] == '1':
-                    testDataY[j][i] = 1
-                else:
-                    testDataY[j][i] = 0                
-    return testDataX,testDataY
-
+def save_obj(obj, name ):
+    with open(name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
 
 
 #main
 #main
-hidenLayers = [7]
+hidenLayers = [36]
 learning_rate = 0.2
-number_of_iterations = 100
+number_of_iterations = 500
 size = 8 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
 structure = [(size+1)*2] + hidenLayers + [size+1]
@@ -192,7 +169,6 @@ costs = np.zeros(number_of_iterations)
 #print ("W2 = ", par["W2"].shape)
 #print ("b2 = ", par["b2"].shape)
 trainDataX,trainDataY = get_train_data(size)
-testDataX,testDataY = get_test_data(size)
 #print trainDataX.shape
 #trainDataY = trainDataY[0:2,:]
 for i in range(number_of_iterations):
@@ -203,9 +179,9 @@ for i in range(number_of_iterations):
     pars[str(i+1)] = par
     costs[i] = cost
 # test
-print costs
+save_obj(par, "parameters")
 
-iteration = np.arange(0, number_of_iterations,1)
-plt.plot(iteration,costs)
-plt.savefig("test.png")
-plt.show
+#iteration = np.arange(0, number_of_iterations,1)
+#plt.plot(iteration,costs)
+#plt.savefig("test.png")
+#plt.show
