@@ -1,5 +1,6 @@
 import pickle
 import re
+import sys
 import numpy as np
 
 def get_test_data(size):
@@ -67,7 +68,8 @@ def L_model_forward(X, parameters):
 
 #main
 par = load_obj("parameters")
-testDataX,testDataY = get_test_data(4)
+print par
+testDataX,testDataY = get_test_data(8)
 AL = L_model_forward(testDataX,par)
 print ("AL  =  " + str(AL))
 AL = np.around(AL) 

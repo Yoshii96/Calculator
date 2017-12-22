@@ -3,7 +3,6 @@ import re
 import sys
 import matplotlib.pyplot as plt
 import pickle
-np.set_printoptions(threshold='nan')
 
 
 def init_parameters(structure):
@@ -72,7 +71,6 @@ def compute_cost(AL, Y):
     m = Y.shape[1]
     cost = -1.0/m*np.sum(Y*np.log(AL)+(1.0-Y)*np.log(1.0-AL))
     cost = np.squeeze(cost)
-    print cost
     return cost
 
 def linear_backward(dZ, cache):
@@ -152,10 +150,10 @@ def save_obj(obj, name ):
 
 #main
 #main
-hidenLayers = []
-learning_rate = 0.1
-number_of_iterations = 1000
-size = 4 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
+hidenLayers = [36]
+learning_rate = 0.07
+number_of_iterations = 20000
+size = 8 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
 structure = [(size+1)*2] + hidenLayers + [size+1]
 #print ("structure = ", structure)
