@@ -67,12 +67,13 @@ def L_model_forward(X, parameters):
 
 #main
 par = load_obj("parameters")
-testDataX,testDataY = get_test_data(8)
+testDataX,testDataY = get_test_data(4)
 AL = L_model_forward(testDataX,par)
-print testDataY
-print AL
+print ("AL  =  " + str(AL))
 AL = np.around(AL) 
+print ("AL after round =  " + str(AL))
 AL = np.absolute(AL - testDataY)
-print AL
-print np.sum(AL)
+print ("AL after absolute =  " + str(AL))
+print ("Sum of AL =  " + str(np.sum(AL)))
+print ("Accuracy = " + str((AL.shape[0] * AL.shape[1] - np.sum(AL)) * 100 / (AL.shape[0] * AL.shape[1])) + "%")
 

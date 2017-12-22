@@ -14,9 +14,11 @@ def init_parameters(structure):
 		parameters['b'+str(i)] = np.zeros((structure[i],1))
 	return parameters
 
+def simpleRound(Z):
+    return np.around(Z),Z
+
 def sigmoid(Z):
 	return 1/(1 + np.exp(-1 * Z)),Z
-
 
 def relu(Z):
 	return np.maximum(0,Z),Z
@@ -33,6 +35,10 @@ def sigmoid_backward(dA, cache):
     dZ = dA * s * (1-s)
     return dZ
 
+def simpleRound_backword(dA, cache):
+    Z = cache
+    return Z 
+
 def forward_propagation(A,W,b):
 	Z = np.dot(W,A) + b
 	cache = (A, W, b)
@@ -46,7 +52,6 @@ def linear_activation_forward(A_prev, W, b, activation):
         Z, linear_cache = forward_propagation(A_prev,W,b)
         A, activation_cache = relu(Z)
     cache = (linear_cache, activation_cache)
-    #print A.shape
     return A, cache
 
 def L_model_forward(X, parameters):
@@ -65,22 +70,16 @@ def L_model_forward(X, parameters):
 
 def compute_cost(AL, Y):
     m = Y.shape[1]
-    tmp1 = np.log(AL)
-    tmp2 = np.log(1-AL)
-    tmp1 = Y * tmp1
-    tmp2 = (1-Y) * tmp2
-    tmp1 = tmp1 + tmp2
-    tmp3 = np.sum(tmp1)
-    tmp3 = -1/m * tmp3
-    cost = -1/m*np.sum(Y*np.log(AL)+(1-Y)*np.log(1-AL))
-    cost = np.squeeze(cost)   
+    cost = -1.0/m*np.sum(Y*np.log(AL)+(1.0-Y)*np.log(1.0-AL))
+    cost = np.squeeze(cost)
+    print cost
     return cost
 
 def linear_backward(dZ, cache):
     A_prev, W, b = cache
     m = A_prev.shape[1]
-    dW = -1.0/m*np.dot(dZ,np.transpose(A_prev))
-    db = 1/m*np.sum(dZ,axis=1,keepdims = True)
+    dW = 1.0/m*np.dot(dZ,np.transpose(A_prev))
+    db = 1.0/m*np.sum(dZ,axis=1,keepdims = True)
     dA_prev = np.dot(W.T,dZ)    
     return dA_prev, dW, db
 
@@ -91,7 +90,7 @@ def linear_activation_backward(dA, cache, activation):
         dA_prev, dW, db = linear_backward(dZ, linear_cache)
     elif activation == "sigmoid":
         dZ = sigmoid_backward(dA, activation_cache)
-        dA_prev, dW, db = linear_backward(dZ, linear_cache)    
+        dA_prev, dW, db = linear_backward(dZ, linear_cache)   
     return dA_prev, dW, db
 
 def L_model_backward(AL, Y, caches):
@@ -99,7 +98,7 @@ def L_model_backward(AL, Y, caches):
     L = len(caches) 
     m = AL.shape[1]
     Y = Y.reshape(AL.shape) 
-    dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
+    dAL = - (np.divide(Y, AL) - np.divide(1.0 - Y, 1.0 - AL))
     current_cache = caches[L-1]
     grads["dA" + str(L)], grads["dW" + str(L)], grads["db" + str(L)] = linear_activation_backward(dAL, current_cache, "sigmoid")
     for l in reversed(range(L-1)):
@@ -113,8 +112,8 @@ def L_model_backward(AL, Y, caches):
 def update_parameters(parameters, grads, learning_rate):
     L = len(parameters) / 2
     for l in range(L):
-        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] + learning_rate* grads["dW" + str(l+1)]
-        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] + learning_rate* grads["db" + str(l+1)]
+        parameters["W" + str(l+1)] = parameters["W" + str(l+1)] - learning_rate* grads["dW" + str(l+1)]
+        parameters["b" + str(l+1)] = parameters["b" + str(l+1)] - learning_rate* grads["db" + str(l+1)]
     return parameters
 
 
@@ -153,10 +152,10 @@ def save_obj(obj, name ):
 
 #main
 #main
-hidenLayers = [36]
-learning_rate = 0.2
-number_of_iterations = 500
-size = 8 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
+hidenLayers = []
+learning_rate = 0.1
+number_of_iterations = 1000
+size = 4 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
 structure = [(size+1)*2] + hidenLayers + [size+1]
 #print ("structure = ", structure)
@@ -173,6 +172,8 @@ trainDataX,trainDataY = get_train_data(size)
 #trainDataY = trainDataY[0:2,:]
 for i in range(number_of_iterations):
     AL, caches = L_model_forward(trainDataX,par)
+    AL[AL == 0] = 0.000000000001
+    AL[AL == 1] = 0.999999999999
     cost = compute_cost(AL, trainDataY)
     grads = L_model_backward(AL, trainDataY,caches)
     par = update_parameters(par, grads, learning_rate)
@@ -180,8 +181,7 @@ for i in range(number_of_iterations):
     costs[i] = cost
 # test
 save_obj(par, "parameters")
-
-#iteration = np.arange(0, number_of_iterations,1)
-#plt.plot(iteration,costs)
-#plt.savefig("test.png")
-#plt.show
+iteration = np.arange(0, number_of_iterations,1)
+plt.plot(iteration,costs)
+plt.savefig("test.png")
+plt.show
