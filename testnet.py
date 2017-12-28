@@ -69,7 +69,7 @@ def L_model_forward(X, parameters):
 #main
 par = load_obj("parameters")
 print par
-testDataX,testDataY = get_test_data(8)
+testDataX,testDataY = get_test_data(4)
 AL = L_model_forward(testDataX,par)
 print ("AL  =  " + str(AL))
 AL = np.around(AL) 

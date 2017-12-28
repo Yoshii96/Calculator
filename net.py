@@ -150,10 +150,10 @@ def save_obj(obj, name ):
 
 #main
 #main
-hidenLayers = [36]
-learning_rate = 0.07
-number_of_iterations = 20000
-size = 8 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
+hidenLayers = [20]
+learning_rate = 0.01
+number_of_iterations = 100000
+size = 4 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
 structure = [(size+1)*2] + hidenLayers + [size+1]
 #print ("structure = ", structure)
@@ -170,8 +170,8 @@ trainDataX,trainDataY = get_train_data(size)
 #trainDataY = trainDataY[0:2,:]
 for i in range(number_of_iterations):
     AL, caches = L_model_forward(trainDataX,par)
-    AL[AL == 0] = 0.000000000001
-    AL[AL == 1] = 0.999999999999
+    AL[AL == 0] = 0.0 + 10000.0/sys.maxsize
+    AL[AL == 1] = 1.0 - 10000.0/sys.maxsize
     cost = compute_cost(AL, trainDataY)
     grads = L_model_backward(AL, trainDataY,caches)
     par = update_parameters(par, grads, learning_rate)
