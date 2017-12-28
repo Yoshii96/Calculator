@@ -11,7 +11,7 @@ def get_test_data(file):
         size = int(tmpstring)
         testData = testData[index+1:-1]
         testData = testData.split("\n")
-        testDataX = np.zeros((((size+1)*2),len(testData)))
+        testDataX = np.zeros((((size + 1)*2),len(testData)))
         testDataY = np.zeros((size+1,len(testData)))
         for i in range(len(testData)):
             testData[i] = testData[i].replace("[", "").replace("]","").replace("'","").strip()
@@ -20,17 +20,11 @@ def get_test_data(file):
             for j in range(len(testData[i])):
                 testData[i][j] = np.binary_repr(int(testData[i][j]),size+1)
             tmpstring = str(testData[i][0]) + str(testData[i][1])
-            for j in range((size+1)*2):
-                if tmpstring[j] == '1':
-                    testDataX[j][i] = 1
-                else:
-                    testDataX[j][i] = 0
+            for j in range((size + 1)*2):
+                testDataX[j][i] = int(tmpstring[j])
             tmpstring = str(testData[i][2])
-            for j in range(size+1):
-                if tmpstring[j] == '1':
-                    testDataY[j][i] = 1
-                else:
-                    testDataY[j][i] = 0                
+            for j in range(size + 1):
+                testDataY[j][i] = int(tmpstring[j])
     return testDataX,testDataY
 
 
@@ -63,9 +57,17 @@ def L_model_forward(X, parameters):
     L = len(parameters) // 2                    
     for l in range(1, L):
         A_prev = A 
-        A = linear_activation_forward(A_prev, parameters["W"+str(l)], parameters["b"+str(l)],activation = "relu")
+        A = linear_activation_forward(
+            A_prev,
+            parameters["W"+str(l)],
+            parameters["b"+str(l)],
+            activation = "relu")
     A_prev = A
-    AL = linear_activation_forward(A_prev, parameters["W"+str(int(len(parameters)/2))], parameters["b"+str(int(len(parameters)/2))],activation = "sigmoid")      
+    AL = linear_activation_forward(
+        A_prev,
+        parameters["W"+str(int(len(parameters)/2))],
+        parameters["b"+str(int(len(parameters)/2))],
+        activation = "sigmoid")
     return AL
 
 
@@ -78,7 +80,7 @@ print par
 testDataX,testDataY = get_test_data(sys.argv[1])
 AL = L_model_forward(testDataX,par)
 print ("AL  =  " + str(AL))
-AL = np.around(AL) 
+AL = np.around(AL)
 print ("AL after round =  " + str(AL))
 AL = np.absolute(AL - testDataY)
 print ("AL after absolute =  " + str(AL))
