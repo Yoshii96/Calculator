@@ -115,10 +115,13 @@ def update_parameters(parameters, grads, learning_rate):
     return parameters
 
 
-def get_train_data(size):
+def get_train_data():
     with open("trainData.txt", "r") as fileTrainData:
         trainData = fileTrainData.read()
-        trainData = trainData[1:-1]
+        index = trainData.find("[")
+        tmpstring = trainData[0:index]
+        size = int(tmpstring)
+        trainData = trainData[index+1:-1]
         trainData = trainData.split("\n")
         trainDataX = np.zeros((((size+1)*2),len(trainData)))
         trainDataY = np.zeros((size+1,len(trainData)))
@@ -151,8 +154,8 @@ def save_obj(obj, name ):
 #main
 #main
 hidenLayers = [20]
-learning_rate = 0.01
-number_of_iterations = 100000
+learning_rate = 0.05
+number_of_iterations = 50000
 size = 4 #TO DO zrobic, zeby nie bylo 5 tylko rozmiar w bitach
 #dodajemy liczby 4 bit wiec wynik mze byc 5
 structure = [(size+1)*2] + hidenLayers + [size+1]
@@ -165,7 +168,7 @@ costs = np.zeros(number_of_iterations)
 #print ("b1 = ", par["b1"].shape)
 #print ("W2 = ", par["W2"].shape)
 #print ("b2 = ", par["b2"].shape)
-trainDataX,trainDataY = get_train_data(size)
+trainDataX,trainDataY = get_train_data()
 #print trainDataX.shape
 #trainDataY = trainDataY[0:2,:]
 for i in range(number_of_iterations):

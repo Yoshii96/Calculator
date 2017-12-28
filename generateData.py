@@ -45,7 +45,8 @@ testData = matrix[int(len(matrix) * 0.7):]
 if len(sys.argv) > 2 and str(sys.argv[2]) == "-P":
 	print trainData
 	print testData
-
+file1.write(sys.argv[1])
+file2.write(sys.argv[1])
 file1.write(str(trainData))
 file2.write(str(testData))
 

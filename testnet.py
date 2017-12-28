@@ -3,10 +3,13 @@ import re
 import sys
 import numpy as np
 
-def get_test_data(size):
-    with open("testData.txt", "r") as fileTestData:
+def get_test_data(file):
+    with open(file, "r") as fileTestData:
         testData = fileTestData.read()
-        testData = testData[1:-1]
+        index = testData.find("[")
+        tmpstring = testData[0:index]
+        size = int(tmpstring)
+        testData = testData[index+1:-1]
         testData = testData.split("\n")
         testDataX = np.zeros((((size+1)*2),len(testData)))
         testDataY = np.zeros((size+1,len(testData)))
@@ -67,9 +70,12 @@ def L_model_forward(X, parameters):
 
 
 #main
+if (len(sys.argv) == 1) or (len(sys.argv) > 3):
+    print ("Podaj nazwe pliku do testow!")
+    sys.exit(0)
 par = load_obj("parameters")
 print par
-testDataX,testDataY = get_test_data(4)
+testDataX,testDataY = get_test_data(sys.argv[1])
 AL = L_model_forward(testDataX,par)
 print ("AL  =  " + str(AL))
 AL = np.around(AL) 
