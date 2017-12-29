@@ -186,7 +186,7 @@ if __name__ == '__main__':
                         default=10000,
                         help='Number of iterations, that will be performed on training set.')
     parser.add_argument('--learning_rate',
-                        type=int,
+                        type=float,
                         default=0.05,
                         help='Learning rate says, how fast parameters will be changing.')
     parser.add_argument('--plot_file',
@@ -241,8 +241,7 @@ if __name__ == '__main__':
             AL[AL == 1] = 1.0 - 1000.0/sys.maxsize
             cost = compute_cost(AL, testDataY)
             test_cost[i / spaces] = cost
-            if i/spaces % 5 == 0:
-                print (str(i/spaces) + "% completed!")
+            print (str(i/spaces) + "% completed!")
     
     save_obj(par, net_file)
     iteration = np.arange(0, number_of_iterations,1)

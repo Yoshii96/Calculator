@@ -1,7 +1,8 @@
 from random import randint
 import numpy as np
-import sys
 import argparse
+
+np.set_printoptions(threshold='nan')
 
 #main
 if __name__ == '__main__':
@@ -39,15 +40,11 @@ if __name__ == '__main__':
     testData = matrix[int(len(matrix) * 0.7):]
 
 
-    if len(sys.argv) > 2 and str(sys.argv[2]) == "-P":
-        print trainData
-        print testData
-
 
     with open("trainData.txt", "w") as file1:
-        file1.write(sys.argv[1])
+        file1.write(str(args.number_of_bits))
         file1.write(str(trainData))
 
     with open("testData.txt", "w") as file2:
-        file2.write(sys.argv[1])
+        file2.write(str(args.number_of_bits))
         file2.write(str(testData))
