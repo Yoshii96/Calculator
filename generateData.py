@@ -20,26 +20,18 @@ if __name__ == '__main__':
 
     rangeForGenerator = (2 ** number_of_bits)
 
-    list1 = [[False for x in range(0,rangeForGenerator)] for y in range(0,rangeForGenerator)]
-    counter = 0
-    matrix = [[0 for x in range(3)] for y in range(int(0.7/1.0 * rangeForGenerator * rangeForGenerator))]
+    matrix = [[0 for x in range(3)] for y in range(int(rangeForGenerator * rangeForGenerator))]
 
-    while counter < int(0.7/1.0 * rangeForGenerator * rangeForGenerator):
-        i = randint(0,rangeForGenerator -1)
-        j = randint(0,rangeForGenerator -1)
-        if (list1[i][j] == False):
-            list1[i][j] = True
-            matrix[counter][0] = i
-            matrix[counter][1] = j
-            matrix[counter][2] = i + j
-            counter = counter + 1
+    for i in range(rangeForGenerator * rangeForGenerator):
+        matrix[i][0] = i / rangeForGenerator
+        matrix[i][1] = i % rangeForGenerator
+        matrix[i][2] = matrix[i][0] + matrix[i][1]
 
     matrix = np.asarray(matrix)
+    np.random.shuffle(matrix)
 
-    trainData = matrix[ : int(len(matrix) * 0.7)]
-    testData = matrix[int(len(matrix) * 0.7):]
-
-
+    trainData = matrix[ : int(len(matrix) * 0.5)]
+    testData = matrix[int(len(matrix) * 0.5):int(len(matrix) * 0.7)]
 
     with open("trainData.txt", "w") as file1:
         file1.write(str(args.number_of_bits))
