@@ -3,12 +3,8 @@ import re
 import sys
 import numpy as np
 import argparse
-from net import get_data, sigmoid, relu, forward_propagation, linear_activation_forward, L_model_forward
+from net import get_data, sigmoid, relu, forward_propagation, linear_activation_forward, L_model_forward, load_obj
 
-
-def load_obj(name):
-    with open( name , 'rb') as f:
-        return pickle.load(f)
 
 
 #main

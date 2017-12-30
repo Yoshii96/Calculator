@@ -159,6 +159,11 @@ def save_obj(obj, name ):
     with open(name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
+def load_obj(name):
+    with open( name , 'rb') as f:
+        return pickle.load(f)
+
+
 
 
 #main
@@ -172,11 +177,11 @@ if __name__ == '__main__':
                         type=str,
                         required=True,
                         help='Data, which will be used to test net.')
-    parser.add_argument('--hiden_layers',
+    parser.add_argument('--hidden_layers',
                         nargs='*',
                         type=int,
                         default=[20],
-                        help='Structure of hiden layers.')
+                        help='Structure of hidden layers.')
     parser.add_argument('--net_file',
                         type=str,
                         default='new_net',
@@ -193,34 +198,52 @@ if __name__ == '__main__':
                         type=str,
                         default='new_plot',
                         help='File, in which plot will be stored.')
+    parser.add_argument('--net_source_file',
+                        type=str,
+                        default=None,
+                        help='File with net.')
+    parser.add_argument('--make_checkpoint_at_iter',
+                        type=int,
+                        default=-1,
+                        help='Saves copy of net at every n*(given argument) iteration. Default -1 means no checkpoints will be made.')
+
 
     args = parser.parse_args()
     
     train_data_str = args.train_data
     test_data_str = args.test_data
-    hiden_layers = args.hiden_layers
+    hidden_layers = args.hidden_layers
     net_file = args.net_file
     number_of_iterations = args.num_of_iterations
     learning_rate = args.learning_rate
     plot_file = args.plot_file
+    net_source_file = args.net_source_file
+    checkpoint = args.make_checkpoint_at_iter
 
 
     print ("Training set: " + train_data_str)
     print ("Test set: " + test_data_str)
-    print ("Structure of hiden layers: " + str(hiden_layers))
-    print ("File to save net: " + net_file)
+    print ("Structure of hidden layers: " + str(hidden_layers))
+    print ("File to save new net: " + net_file + ".pkl")
     print ("Number of iterations: " + str(number_of_iterations))
     print ("Learning rate: " + str(learning_rate))
     print ("File to save plot: " + plot_file)
+    print ("Net source file: " + net_source_file)
+    print ("Make checkpoint at iterations: " + checkpoint)
+
 
     trainDataX,trainDataY,size = get_data(train_data_str)
     testDataX, testDataY, size = get_data(test_data_str)
-    structure = [(size+1)*2] + hiden_layers + [size+1]
+    structure = [(size+1)*2] + hidden_layers + [size+1]
 
     steps = 100
     spaces = number_of_iterations / steps
     
-    par = init_parameters(structure)
+    if net_source_file == None:
+        par = init_parameters(structure)
+    else:
+        par = load_obj(net_source_file)
+
     pars = {}
     pars["0"] = par
     costs = np.zeros(number_of_iterations)
@@ -242,6 +265,8 @@ if __name__ == '__main__':
             cost = compute_cost(AL, testDataY)
             test_cost[i / spaces] = cost
             print (str(i/spaces) + "% completed!")
+        if checkpoint != -1 and i % checkpoint == 0:
+            save_obj(par, net_file + "_" + str(i))
     
     save_obj(par, net_file)
     iteration = np.arange(0, number_of_iterations,1)
