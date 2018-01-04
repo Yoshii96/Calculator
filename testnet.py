@@ -29,11 +29,16 @@ if __name__ == '__main__':
 
     par = load_obj(net_file)
     testDataX,testDataY,size = get_data(test_data_str)
+
+    tmp_shape1, shape2 = par["W" + str(1)].shape
+    shape1, tmp_shape2 = par["W" + str(len(par)/2)].shape
+    if shape1 != size + 1 or shape2 != (size + 1) * 2:
+        print ('Structure of net do not match with data!')
+        sys.exit(0)
+
     AL,tmpcache = L_model_forward(testDataX,par)
-    print ("AL  =  " + str(AL))
     AL = np.around(AL)
-    print ("AL after round =  " + str(AL))
     AL = np.absolute(AL - testDataY)
-    print ("Errors in AL =  " + str(AL))
+    #print ("Errors in AL =  " + str(AL))
     print ("Sum of errors =  " + str(np.sum(AL)))
     print ("Accuracy = " + str((AL.shape[0] * AL.shape[1] - np.sum(AL)) * 100 / (AL.shape[0] * AL.shape[1])) + "%")

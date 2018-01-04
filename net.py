@@ -180,7 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('--hidden_layers',
                         nargs='*',
                         type=int,
-                        default=[20],
+                        default=[8],
                         help='Structure of hidden layers.')
     parser.add_argument('--net_file',
                         type=str,
@@ -200,7 +200,7 @@ if __name__ == '__main__':
                         help='File, in which plot will be stored.')
     parser.add_argument('--net_source_file',
                         type=str,
-                        default=None,
+                        default="None",
                         help='File with net.')
     parser.add_argument('--make_checkpoint_at_iter',
                         type=int,
@@ -229,23 +229,29 @@ if __name__ == '__main__':
     print ("Learning rate: " + str(learning_rate))
     print ("File to save plot: " + plot_file)
     print ("Net source file: " + net_source_file)
-    print ("Make checkpoint at iterations: " + checkpoint)
+    print ("Make checkpoint at iterations: " + str(checkpoint))
 
 
     trainDataX,trainDataY,size = get_data(train_data_str)
-    testDataX, testDataY, size = get_data(test_data_str)
+    testDataX,testDataY, tmp_size = get_data(test_data_str)
+    if size != tmp_size:
+        print ('Input and output data have different sizes!')
+        sys.exit(0)
     structure = [(size+1)*2] + hidden_layers + [size+1]
-
-    steps = 100
-    spaces = number_of_iterations / steps
     
-    if net_source_file == None:
+    if net_source_file == 'None':
         par = init_parameters(structure)
     else:
         par = load_obj(net_source_file)
+        tmp_shape1, shape2 = par["W" + str(1)].shape
+        shape1, tmp_shape2 = par["W" + str(len(par)/2)].shape
+        if shape1 != size + 1 or shape2 != (size + 1) * 2:
+            print ('Structure of net do not match with data!')
+            sys.exit(0)
 
-    pars = {}
-    pars["0"] = par
+    steps = 100
+    spaces = number_of_iterations / steps        
+
     costs = np.zeros(number_of_iterations)
     test_cost = np.zeros(steps)
 
@@ -256,7 +262,6 @@ if __name__ == '__main__':
         cost = compute_cost(AL, trainDataY)
         grads = L_model_backward(AL, trainDataY,caches)
         par = update_parameters(par, grads, learning_rate)
-        pars[str(i+1)] = par
         costs[i] = cost
         if i % spaces == 0:
             AL, caches = L_model_forward(testDataX,par)
